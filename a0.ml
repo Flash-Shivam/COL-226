@@ -1,3 +1,4 @@
+
 type sign = Neg | NonNeg ;;
 type bigint = sign * int list ;;
 exception DivisionByZero;;
@@ -7,19 +8,17 @@ let rec c x l = match x with
 | _ -> c (x/10) (x mod 10 :: l);;
 
 let mk_big x = match x with
-| 0 -> (NonNeg,[])
+| 0 -> (NonNeg,[0])
 | _ when x < 0 -> (Neg, c (-1*x) [])
 | _ -> (NonNeg, c x []);;
 
-(* this function converts (_,[0]) -> (NonNeg,[])  *)
-let fz (x,l) = if (l = [0]) then (NonNeg,[]) else (x,l);;
 
 let ab (x,l) = match x with
 _ -> (NonNeg,l);;
 
 let minus (x,l) = match x with
 | Neg -> (NonNeg,l)
-| NonNeg -> if(l=[]) then (NonNeg,[]) else (Neg,l) ;;
+| NonNeg -> (Neg,l) ;;
 
 let abs (x,l) = match x with
 | _ -> (NonNeg,l);;
@@ -111,18 +110,18 @@ let rec ad l1 cr l l2 = match (l1,l2) with
   | (hd::tl,[]) ->  if (hd+cr>=0) then sb tl (0) ((hd+cr) :: l) [] else sb tl (-1) ((10+hd+cr) :: l) []
   | (hd::tl,r::s) -> if (hd+cr>=r) then sb tl (0) ((-r+hd+cr) :: l) s else sb tl (-1) ((10-r+hd+cr)mod 10 :: l) s;;
 
-let sub (x,l1) (y,l2) = if(eq (x,l1) (y,l2)) then (NonNeg,[]) else
-if (geq (x,l1) (y,l2) && x = NonNeg && y = NonNeg) then fz (NonNeg,rz (sb (rev l1) (0) [] (rev l2))) else
-if (geq (x,l1) (y,l2) && x = NonNeg && y = Neg) then fz (NonNeg,rz (ad (rev l1) (0) [] (rev l2))) else
-if (geq (x,l1) (y,l2) && x = Neg && y = Neg) then fz (NonNeg,rz (sb (rev l2) (0) [] (rev l1))) else
-if (leq (x,l1) (y,l2) && x = Neg && y = NonNeg) then fz (Neg,rz (ad (rev l1) (0) [] (rev l2))) else
-if (leq (x,l1) (y,l2) && x = Neg && y = Neg) then fz (Neg,rz (sb (rev l1) (0) [] (rev l2))) else
- fz (Neg,rz (sb (rev l2) (0) [] (rev l1)));;
+let sub (x,l1) (y,l2) = if(eq (x,l1) (y,l2)) then (NonNeg,[0]) else
+if (geq (x,l1) (y,l2) && x = NonNeg && y = NonNeg) then (NonNeg,rz (sb (rev l1) (0) [] (rev l2))) else
+if (geq (x,l1) (y,l2) && x = NonNeg && y = Neg) then (NonNeg,rz (ad (rev l1) (0) [] (rev l2))) else
+if (geq (x,l1) (y,l2) && x = Neg && y = Neg) then (NonNeg,rz (sb (rev l2) (0) [] (rev l1))) else
+if (leq (x,l1) (y,l2) && x = Neg && y = NonNeg) then (Neg,rz (ad (rev l1) (0) [] (rev l2))) else
+if (leq (x,l1) (y,l2) && x = Neg && y = Neg) then (Neg,rz (sb (rev l1) (0) [] (rev l2))) else
+ (Neg,rz (sb (rev l2) (0) [] (rev l1)));;
 
- let add (x,l1) (y,l2) = if( x = NonNeg && y = NonNeg) then fz (NonNeg,rz (ad (rev l1) (0) [] (rev l2))) else
- if( x = Neg && y = Neg) then fz (Neg,rz (ad (rev l1) (0) [] (rev l2))) else
-if( x = NonNeg && y = Neg ) then fz (sub (x,l1) (NonNeg,l2)) else
- fz (sub (y,l2) (NonNeg,l1));;
+ let add (x,l1) (y,l2) = if( x = NonNeg && y = NonNeg) then (NonNeg,rz (ad (rev l1) (0) [] (rev l2))) else
+ if( x = Neg && y = Neg) then (Neg,rz (ad (rev l1) (0) [] (rev l2))) else
+if( x = NonNeg && y = Neg ) then sub (x,l1) (NonNeg,l2) else
+ sub (y,l2) (NonNeg,l1);;
 
 (* this function returns the list which is the result of product of list l1 and g*)
 let rec mm l1 c l g  = match l1 with
@@ -136,14 +135,13 @@ let rec mt (x,l1) (y,l2) = match l2 with
 
 (* this function removes a zero from the front of the list if it is present*)
 let v l = match l with
-| [] -> []
 | hd :: tl -> if (hd = 0) then tl else l;;
 
 let mult (x,l1) (y,l2) = match (x,y) with
-| (NonNeg,Neg) -> if(l1=[])then (NonNeg,[]) else fz (Neg,rev( v( rev (rz (mt (x,l1) (y,rev (l2)))))))
-|(Neg,NonNeg) -> if(l2=[])then (NonNeg,[]) else fz (Neg,rev( v( rev (rz (mt (x,l1) (y,rev (l2)))))))
-| (Neg,Neg)  -> fz (NonNeg,rev( v( rev (rz (mt (x,l1) (y,rev (l2)))))))
-| (NonNeg,NonNeg) -> if(l1=[]||l2=[])then (NonNeg,[]) else fz (NonNeg,rev( v( rev (rz (mt (x,l1) (y,rev (l2)))))));;
+| (NonNeg,Neg) -> if(l1=[0])then (NonNeg,[0]) else (Neg,rev( v( rev (rz (mt (x,l1) (y,rev (l2)))))))
+|(Neg,NonNeg) -> if(l2=[0])then (NonNeg,[0]) else(Neg,rev( v( rev (rz (mt (x,l1) (y,rev (l2)))))))
+| (Neg,Neg)  -> (NonNeg,rev( v( rev (rz (mt (x,l1) (y,rev (l2)))))))
+| (NonNeg,NonNeg) -> if(l1=[0]||l2=[0])then (NonNeg,[0]) else(NonNeg,rev( v( rev (rz (mt (x,l1) (y,rev (l2)))))));;
 
 (*this function returns l1 - l2 *)
 let r l1 l2 = if(l1 = l2 ) then [0] else rz (sb (rev l1) (0) [] (rev l2)) ;;
@@ -192,21 +190,18 @@ let pr (x,l1) (y,l2) =  (ap (diva (NonNeg,l1) (ap ((NonNeg,l2)) (List.length l1 
 let rec dz (x,l1) (y,l2) (z,l) =     if(geq (NonNeg,l1) (NonNeg,l2) ) then dz (sub (NonNeg,l1) ( mult (NonNeg,l2) (pr (x,l1) (y,l2) )  )  )    (y,l2) (add (NonNeg,l) (pr (x,l1) (y,l2)) )
 else (z,l);;
 
-(* gives same answer as div but if l1 mod l2 !=0 if = 0 then gives ans expected -1 *)
-let divs (x,l1) (y,l2) = match (x,y) with
-| (NonNeg,NonNeg) -> if(gt (NonNeg,l2) (NonNeg,l1) ) then  (NonNeg,[]) else fz (dz (x,l1) (y,l2) (NonNeg,[]))
-| (Neg,Neg) -> if(gt (NonNeg,l2) (NonNeg,l1)) then  (NonNeg,[]) else fz (dz (x,l1) (y,l2) (NonNeg,[]))
-| (NonNeg,Neg) -> if(gt (NonNeg,l2) (NonNeg,l1)) then (NonNeg,[]) else fz (negg ( dz (x,l1) (y,l2) (NonNeg,[]) ))
-| (Neg,NonNeg) ->  if(gt (NonNeg,l2) (NonNeg,l1)) then (NonNeg,[]) else fz (negg ( dz (x,l1) (y,l2) (NonNeg,[]) )) ;;
+let div (x,l1) (y,l2) = match (x,y) with
+| (NonNeg,NonNeg) -> if(gt (NonNeg,l2) (NonNeg,l1) ) then  (NonNeg,[0]) else dz (x,l1) (y,l2) (NonNeg,[])
+| (Neg,Neg) -> if(gt (NonNeg,l2) (NonNeg,l1)) then  (NonNeg,[0]) else dz (x,l1) (y,l2) (NonNeg,[])
+| (NonNeg,Neg) -> if(gt (NonNeg,l2) (NonNeg,l1)) then (NonNeg,[0]) else negg ( dz (x,l1) (y,l2) (NonNeg,[]) )
+| (Neg,NonNeg) ->  if(gt (NonNeg,l2) (NonNeg,l1)) then (NonNeg,[0]) else negg ( dz (x,l1) (y,l2) (NonNeg,[]) ) ;;
 
-
-let div (x,l1) (y,l2) = if((mult (divs (x,l1) (y,l2)) (y,l2) )=  (x,l1) ||  (divs (x,l1) (y,l2)) = (NonNeg,[])  ) then divs (x,l1) (y,l2)
-else if(x=y) then (add ( divs (x,l1) (y,l2) ) (NonNeg,[1]) )
-else   (add ( divs (x,l1) (y,l2) ) (Neg,[1]) ) ;;
 
 let rem (x,l1) (y,l2) = match (x,y) with
-|(NonNeg,NonNeg) -> fz (sub (x,l1) (mult (y,l2) (div (x,l1) (y,l2))))
-|(Neg,Neg) -> fz (sub (x,l1) (mult (y,l2) (div (x,l1) (y,l2))))
-|(NonNeg,Neg) -> fz (sub (x,l1) (mult (y,l2) (div (x,l1) (y,l2))))
-|(Neg,NonNeg) -> fz (sub (x,l1) (mult (y,l2) (div (x,l1) (y,l2))))
+|(NonNeg,NonNeg) -> sub (x,l1) (mult (y,l2) (div (x,l1) (y,l2)))
+|(Neg,Neg) -> sub (x,l1) (mult (y,l2) (div (x,l1) (y,l2)))
+|(NonNeg,Neg) -> sub (x,l1) (mult (y,l2) (div (x,l1) (y,l2)))
+|(Neg,NonNeg) -> sub (x,l1) (mult (y,l2) (div (x,l1) (y,l2)))
 ;;
+
+
