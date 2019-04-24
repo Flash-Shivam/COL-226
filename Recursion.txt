@@ -1,0 +1,8 @@
+execute (App(App(Lambda (V "f", (Lambda ( V "n", If_Then_Else(Cmp (Sub(Integer (1),V "n")),Integer 1,If_Then_Else(Cmp (Sub(Integer (2),V "n")),Integer 1,Plus(App(App(V "f",V "f"),Plus(V "n",Integer (-2))),App(App(V "f",V "f"),Plus(V "n",Integer (-1))))))))),Lambda (V "f", (Lambda ( V "n", If_Then_Else(Cmp (Sub(Integer (1),V "n")),Integer 1,If_Then_Else(Cmp (Sub(Integer (2),V "n")),Integer 1,Plus(App(App(V "f",V "f"),Plus(V "n",Integer (-2))),App(App(V "f",V "f"),Plus(V "n",Integer (-1)))))))))),Integer 8)) [] ;;
+
+
+execute (App(App( Lambda (V "f", (Lambda ( V "n", If_Then_Else(Cmp (Sub(Integer (1),V "n")),Integer 1,Mult(V "n",App(App(V "f",V "f"),Plus(V "n",Integer (-1)))))))), Lambda (V "f", (Lambda ( V "n", If_Then_Else(Cmp (Sub(Integer (1),V "n")),Integer 1,Mult(V "n",App(App(V "f",V "f"),Plus(V "n",Integer (-1))))))))),Integer 5)) [] ;;
+
+krivinemc (CLOSURE(App(App( Lambda (V "f", (Lambda ( V "n", If_Then_Else(Cmp (Sub(Integer (1),V "n")),Integer 1,Mult(V "n",App(App(V "f",V "f"),Plus(V "n",Integer (-1)))))))), Lambda (V "f", (Lambda ( V "n", If_Then_Else(Cmp (Sub(Integer (1),V "n")),Integer 1,Mult(V "n",App(App(V "f",V "f"),Plus(V "n",Integer (-1))))))))),Integer 5),[])) [] ;;
+
+krivinemc (CLOSURE(App(App(Lambda (V "f", (Lambda ( V "n", If_Then_Else(Cmp (Sub(Integer (1),V "n")),Integer 1,If_Then_Else(Cmp (Sub(Integer (2),V "n")),Integer 1,Plus(App(App(V "f",V "f"),Plus(V "n",Integer (-2))),App(App(V "f",V "f"),Plus(V "n",Integer (-1))))))))),Lambda (V "f", (Lambda ( V "n", If_Then_Else(Cmp (Sub(Integer (1),V "n")),Integer 1,If_Then_Else(Cmp (Sub(Integer (2),V "n")),Integer 1,Plus(App(App(V "f",V "f"),Plus(V "n",Integer (-2))),App(App(V "f",V "f"),Plus(V "n",Integer (-1)))))))))),Integer 8),[])) [] ;;
