@@ -4,7 +4,7 @@
 
 /*
 - Tokens (token name and rules) are modified wrt to A2. Please make necessary changes in A3
-- LP and RP are left and right parenthesis33
+- LP and RP are left and right parenthesis
 - Write grammar rules to recognize
   - >= <= from GT EQ LT tokens
   - if then else fi
@@ -13,8 +13,10 @@
 %token <int> INT
 %token <bool> BOOL
 %token <string> ID
-%token ABS TILDA NOT PLUS MINUS TIMES DIV REM CONJ DISJ EQ GT LT LP RP IF THEN ELSE FI COMMA PROJ EOF
-%start main
+%token ABS TILDA NOT PLUS MINUS TIMES DIV REM CONJ DISJ EQ GT LT LP RP IF THEN ELSE FI COMMA PROJ 
+LET IN END BACKSLASH DOT DEF SEMICOLON PARALLEL LOCAL EOF TINT TUNIT TBOOL ARROW COLON 
+%start main de
+%type <A1.definition> de 
 %type <A1.exptree> main /* Return type */
 %%
 /*
@@ -23,76 +25,104 @@ The language should contain the following types of expressions:  integers and bo
 */
 
 main:
-disc_exp EOF                 { $1 }          /* $n on the rhs returns the value for nth symbol in the grammar on lhs */
+	anda				{ $1 }
+	|anda EOF			{ $1 }
+	;
+		
+anda:
+	anda DISJ oro		{ Disjunction($1,$3) }
+	|oro				{ $1 }
+;
+oro:
+	oro CONJ nawt	{ Conjunction($1,$3) }
+	|nawt				{ $1 }
+;
+nawt:
+	NOT nawt 			{ Not($2) }
+	|comp				{ $1 }
+;
+comp:
+	comp GT sub			{ GreaterT ($1,$3) }
+	|comp GT EQ sub 	{ GreaterTE($1,$4) }
+	|comp LT EQ sub		{ LessTE ($1,$4) }
+	|comp LT sub		{ LessT ($1,$3) }
+	|comp EQ sub		{ Equals ($1,$3) } 
+	|sub				{ $1 }	
+;
+sub:
+	sub MINUS mults		{ Sub ($1,$3) }
+	|sub PLUS mults		{ Add ($1,$3) }
+	|mults 					{ $1 }
+;
+mults:					
+	mults DIV negates			{ Div ($1,$3) }
+	|mults TIMES negates 		{ Mult ($1,$3) }
+	|mults REM negates			{ Rem ($1,$3) }
+	|negates					{ $1 }
 ;
 
-disc_exp:
-disc_exp DISJ conj_exp {Disjunction($1,$3)}
-| conj_exp {$1}
+negates:
+	|TILDA negates 		{ Negative($2) }
+	|ABS negates		{ Abs($2) }
+	|lasts				{ $1 }
+;
+lasts:
+	LET de IN main END								{Let($2,$4)}
+	|IF main THEN main ELSE main FI					{ IfThenElse($2,$4,$6) }
+	|PROJ LP INT COMMA INT RP main					{ Project(($3,$5),$7) }
+	|tupl											{ $1 } 
+	|const											{ $1 }
 ;
 
-conj_exp:
-conj_exp CONJ not_exp {Conjunction($1,$3)}
-| not_exp {$1}
+
+terminals:
+	|DEF ID COLON TINT EQ main 				{ Simple($2,(Tint),$6) }
+	|DEF ID COLON TBOOL EQ main 				{ Simple($2,(Tbool),$6) }
+	|DEF ID COLON TUNIT EQ main 				{ Simple($2,(Tunit),$6) }
+	|DEF ID COLON TINT ARROW type_exp EQ main 				{ Simple($2,(Tfunc(Tint,$6)),$8) }
+	|DEF ID COLON TBOOL ARROW type_exp  EQ main 			{ Simple($2,Tfunc(Tbool,$6),$8) }
+	|DEF ID COLON TUNIT ARROW type_exp EQ main 				{ Simple($2,Tfunc(Tunit,$6),$8) }
+	|LOCAL de IN de END						{ Local($2,$4) }
 ;
 
-not_exp:
-| NOT not_exp {Not($2)}
-| NOT comparison_exp {Not($2)}
-| comparison_exp {$1}
 
-comparison_exp:
-| comparison_exp EQ dp_exp {Equals($1,$3)}
-| comparison_exp LT dp_exp {LessT($1,$3)}
-| comparison_exp LT EQ dp_exp {LessTE($1,$4)}
-| comparison_exp GT dp_exp {GreaterT($1,$3)}
-| comparison_exp GT EQ dp_exp {GreaterTE($1,$4)}
-| dp_exp {$1}
-;
-dp_exp:
-| dp_exp PLUS drm_exp {Add($1,$3)}
-| dp_exp MINUS drm_exp {Sub($1,$3)}
-| drm_exp {$1}
-;
-drm_exp:
-| drm_exp TIMES abs_exp {Mult($1,$3)}
-| drm_exp DIV abs_exp   {Div($1,$3)}
-| drm_exp REM abs_exp   {Rem($1,$3)}
-| abs_exp {$1}
-;
-abs_exp:
-| ABS abs_exp {Abs($2)}
-| neg_exp {$1}
-;
-neg_exp:
-| TILDA ifte_exp {Negative($2)}
-| ifte_exp {$1}
-;
-ifte_exp:
-| IF disc_exp THEN disc_exp ELSE disc_exp FI {IfThenElse($2,$4,$6)}
-| project_exp {$1}
-;
-project_exp: 
-| PROJ LP INT COMMA INT RP project_exp {Project(($3,$5),$7)}
-| tuple_exp {$1}
-;
-tuple_exp: 
-| LP disc_exp comma_exp RP  {Tuple((List.length ($3))+1,$2::$3)}
-| LP RP  {Tuple(0,[])}
-| inparen_exp {$1} 
+
+type_exp :
+| TINT		  {Tint}
+| TBOOL           {Tbool}
+| TUNIT           {Tunit}
+| LP type_exp TIMES type_expp RP   { Ttuple(($2)::($4)) } 
+;;
+
+type_expp:
+	type_exp TIMES type_expp				{ [$1]@($3) }
+	|type_exp							{ [$1] }
 ;
 
-comma_exp:
-comma_exp COMMA disc_exp {$1@[$3]}
-| COMMA disc_exp  {[$2]}
-;
 
-inparen_exp:
-| LP disc_exp RP {InParen($2)}
-| constant {$1}
+de:
+	terminals								{$1}
+	|de SEMICOLON terminals				{ match $1 with
+										Sequence(a) -> Sequence(a@[$3])
+										|_ -> Sequence([$1;$3])}
+	|de PARALLEL terminals				{ match $1 with
+										Parallel(a) -> Parallel(a@[$3])
+										|_ -> Parallel([$1;$3])}
 ;
-constant:
-ID                                 { Var($1) }      /* To be interpreted as a variable name with string as tokenised */
-| INT                              { N($1) }		
-| BOOL                             {B($1)}    /* To be interpreted as an integer with its value as tokenised   */
+tupl:
+	LP main COMMA maintemp RP		{ Tuple(List.length($4)+1,(($2)::($4))) } 
+;
+maintemp:
+	main COMMA maintemp				{ [$1]@($3) }
+	|main							{ [$1] }
+;
+const:
+	ID											{ Var($1) }
+	|INT										{ N($1) }
+	|BOOL										{ B($1) }
+	|LP main RP									{ InParen($2) }
+	|LP main RP LP main RP						{ FunctionCall($2,$5)}
+	|BACKSLASH ID COLON TINT DOT main   				{FunctionAbstraction($2,Tint,$6)}
+	|BACKSLASH ID COLON TBOOL DOT main 				{FunctionAbstraction($2,Tbool,$6)}
+	|BACKSLASH ID COLON TUNIT DOT main   				{FunctionAbstraction($2,Tunit,$6)}
 ;

@@ -41,8 +41,12 @@ let comma = [',']
 let finish = "fi"
 let til = ['~']
 let proj = "proj"
-
-
+let def = "def"
+let local = "local"
+let lett = "let"
+let dot = '.'
+let semi = ';'
+let endd = "end"
 let integer = ( fi digits)|( ['0'])
 let id = letter+
 let spl_char = ['*' '.' '$']
@@ -54,8 +58,14 @@ eof   {EOF}
 |integer as n  {(INT (int_of_string n))}
 | '+' {PLUS}
 | m {TIMES}
+| ':' {COLON}
+| "Tint" {TINT}
+| "Tbool" {TBOOL}
+| "Tunit" {TUNIT}
 | '-' {MINUS}
+| "->" {ARROW}
 | mod {REM}
+| "in" {IN}
 | d  {DIV}
 |gt {GT}
 |lt {LT}
@@ -64,6 +74,14 @@ eof   {EOF}
 | f {(BOOL false)}
 |abd {ABS}
 | nott {NOT}
+| dot {DOT}
+| semi {SEMICOLON}
+|"\\" { BACKSLASH }
+|"||" { PARALLEL }
+| endd {END}
+| def {DEF}
+| local {LOCAL}
+| lett {LET}
 |lpar {LP}
 |rpar {RP}
 | and_  {CONJ}
