@@ -92,14 +92,14 @@ let rec eval_tree q = match q with
 	| VAR(z) -> if (z == 'a' || z == 'b' || z == 'c' || z == 'w' || z == 'x' || z == 'z' || z == 'm' || z == 'p' || z == 'j' ) then (w_temp := (VarTable.add (x) (VarTable.find (z) (!w_temp)) (!w_temp))) else Printf.printf "Can't be done"; ) )) 
 
 	| Call(FUNC(x),Tup(p,q)) ->( match (!l) with a :: b ->  ( match a with 'M' ->   if (x == 'M' || x == 'Q' || x == 'P') then (q_temp := VarTable.map f !temp;p_temp := VarTable.map f !temp;l := (x :: (!l));st := (x :: (!st))) else Printf.printf " Can't be called " ; 
-|'P' ->   if (x == 'M' || x == 'Q' || x == 'P' || x == 'R' || x == 'S' || x == 'V') then (r_temp := VarTable.map f !p_temp;l := (x :: (!l));st := (x :: (!st));eval_tree (Assign(VAR('x'),p));eval_tree (Assign(VAR('y'),q))) (*(eval_tree (Assign(VAR('x'),p))); (eval_tree (Assign(VAR('y'),q))); *) else Printf.printf " Can't be called " ; 
-| 'Q' -> if (x == 'M' || x == 'P' || x == 'Q' || x == 'T' || x == 'U') then (t_temp := VarTable.map f !q_temp;l := (x :: (!l));st := (x :: (!st));eval_tree (Assign(VAR('z'),p));eval_tree (Assign(VAR('w'),q))) else Printf.printf " Can't be called " ;
-| 'R' -> if (x == 'M' || x == 'Q' || x == 'P' || x == 'R' || x == 'V' ) then (v_temp := VarTable.map f !r_temp;l := (x :: (!l));st := (x :: (!st));eval_tree (Assign(VAR('w'),p));eval_tree (Assign(VAR('i'),q))) else Printf.printf " Can't be called " ;
-| 'S' -> if (x == 'M' || x == 'Q' || x == 'P' || x == 'R' || x == 'V' ) then (l := (x :: (!l));st := (x :: (!st));eval_tree (Assign(VAR('c'),p));eval_tree (Assign(VAR('k'),q))) else Printf.printf " Can't be called " ;
+|'P' ->   if (x == 'M' || x == 'Q' || x == 'P' || x == 'R' || x == 'S' || x == 'V') then (r_temp := VarTable.map f !p_temp;l := (x :: (!l));st := (x :: (!st))) (*(eval_tree (Assign(VAR('x'),p))); (eval_tree (Assign(VAR('y'),q))); *) else Printf.printf " Can't be called " ; 
+| 'Q' -> if (x == 'M' || x == 'P' || x == 'Q' || x == 'T' || x == 'U') then (t_temp := VarTable.map f !q_temp;l := (x :: (!l));st := (x :: (!st))) else Printf.printf " Can't be called " ;
+| 'R' -> if (x == 'M' || x == 'Q' || x == 'P' || x == 'R' || x == 'V' ) then (v_temp := VarTable.map f !r_temp;l := (x :: (!l));st := (x :: (!st))) else Printf.printf " Can't be called " ;
+| 'S' -> if (x == 'M' || x == 'Q' || x == 'P' || x == 'R' || x == 'V' ) then (l := (x :: (!l));st := (x :: (!st))) else Printf.printf " Can't be called " ;
 | 'V' -> if (x == 'R' || x == 'Q' || x == 'P' || x == 'S' || x == 'M' || x == 'V') then (l := (x :: (!l));st := (x :: (!st));eval_tree (Assign(VAR('m'),p));eval_tree (Assign(VAR('n'),q))) else Printf.printf " Can't be called " ;
-| 'U' -> if (x == 'T' || x == 'Q' || x == 'P'|| x == 'M' || x == 'U') then (l := (x :: (!l));st := (x :: (!st));eval_tree (Assign(VAR('c'),p));eval_tree (Assign(VAR('z'),q))) else Printf.printf " Can't be called " ;
-| 'T' -> if (x == 'M' || x == 'Q'|| x == 'P'|| x == 'U' || x == 'T' || x == 'W') then (w_temp := VarTable.map f !t_temp;l := (x :: (!l));st := (x :: (!st));eval_tree (Assign(VAR('a'),p));eval_tree (Assign(VAR('y'),q))) else Printf.printf " Can't be called " ;
-| 'W' -> if (x == 'U' || x == 'Q' || x == 'P' || x == 'T' || x == 'M' || x == 'W') then (l := (x :: (!l));st := (x :: (!st));eval_tree (Assign(VAR('m'),p));eval_tree (Assign(VAR('p'),q))) else Printf.printf " Can't be called " ;))
+| 'U' -> if (x == 'T' || x == 'Q' || x == 'P'|| x == 'M' || x == 'U') then (l := (x :: (!l));st := (x :: (!st))) else Printf.printf " Can't be called " ;
+| 'T' -> if (x == 'M' || x == 'Q'|| x == 'P'|| x == 'U' || x == 'T' || x == 'W') then (w_temp := VarTable.map f !t_temp;l := (x :: (!l));st := (x :: (!st))) else Printf.printf " Can't be called " ;
+| 'W' -> if (x == 'U' || x == 'Q' || x == 'P' || x == 'T' || x == 'M' || x == 'W') then (l := (x :: (!l));st := (x :: (!st))) else Printf.printf " Can't be called " ;))
 | RETURN -> ( match !l with p :: q -> ( match p with 'P' ->  (l:= q;st := p :: q;p_temp := ETable.map f !e_temp)
 |'Q' ->  (l:= q;st := p :: q;q_temp := ETable.map f !e_temp)
 |'R' ->  (l:= q;st := p :: q;r_temp := ETable.map f !e_temp)
